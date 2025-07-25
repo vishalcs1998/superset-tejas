@@ -1629,6 +1629,7 @@ TALISMAN_CONFIG = {
             "'self'",
             "https://api.mapbox.com",
             "https://events.mapbox.com",
+            "http://192.168.0.117:50000",  # your FastAPI endpoint
         ],
         "object-src": "'none'",
         "style-src": [
@@ -1660,6 +1661,7 @@ TALISMAN_DEV_CONFIG = {
             "'self'",
             "https://api.mapbox.com",
             "https://events.mapbox.com",
+            "http://192.168.0.117:50000",
         ],
         "object-src": "'none'",
         "style-src": [
