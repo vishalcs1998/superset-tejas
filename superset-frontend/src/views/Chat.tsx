@@ -208,7 +208,7 @@ const Chat: React.FC = () => {
       </Messages>
 
       <ControlsWrapper>
-        {showSamples && (
+        {/* {showSamples && (
           <SampleButtons>
             <SampleButton onClick={() => sendSample('Show all KPIs')}>
               Show all KPIs
@@ -217,7 +217,7 @@ const Chat: React.FC = () => {
               Set up my dashboard
             </SampleButton>
           </SampleButtons>
-        )}
+        )} */}
         <Composer>
           <Input
             value={draft}
