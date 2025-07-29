@@ -48,6 +48,8 @@ const Container = styled.div`
 
 const Messages = styled.div`
   flex: 1;
+  display: flex;              /* ← make this a flex container */
+  flex-direction: column;     /* ← stack bubbles vertically */
   overflow-y: auto;
   padding: ${theme.gridUnit}px;
 `;
@@ -80,10 +82,14 @@ const Composer = styled.div`
   padding: ${theme.gridUnit}px;
 `;
 
+/**
+ * Bot (fromMe=false) will be flex-start (left),
+ * User (fromMe=true) will be flex-end (right)
+ */
 const MessageBubble = styled.div<{ fromMe: boolean }>`
   max-width: 80%;
   margin-bottom: ${theme.gridUnit}px;
-  align-self: ${({ fromMe }) => (fromMe ? 'flex-start' : 'flex-end')};
+  align-self: ${({ fromMe }) => (fromMe ? 'flex-end' : 'flex-start')};
   background: ${({ fromMe, theme }) =>
     fromMe ? theme.colors.grayscale.light3 : theme.colors.primary.base};
   color: ${({ fromMe }) => (fromMe ? '#000' : '#fff')};
@@ -95,7 +101,18 @@ const MessageBubble = styled.div<{ fromMe: boolean }>`
 // 3) The Chat component
 
 const Chat: React.FC = () => {
-  const [messages, setMessages] = useState<{ from: 'me' | 'bot'; reply: Reply }[]>([]);
+  const [messages, setMessages] = useState<
+    { from: 'me' | 'bot'; reply: Reply }[]
+  >([
+    {
+      from: 'bot',
+      reply: {
+        type: 'text',
+        text:
+          "Hello there, I'm your virtual network assistant. Please type in your questions and I can then help further.",
+      },
+    },
+  ]);
   const [draft, setDraft] = useState('');
   const [showSamples, setShowSamples] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -110,10 +127,11 @@ const Chat: React.FC = () => {
   const doSend = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    // hide samples after first message
     setShowSamples(false);
-    // add user's message
-    setMessages(msgs => [...msgs, { from: 'me', reply: { type: 'text', text: trimmed } }]);
+    setMessages(msgs => [
+      ...msgs,
+      { from: 'me', reply: { type: 'text', text: trimmed } },
+    ]);
     try {
       const payload: QueryRequest = { query: trimmed, dashboardID };
       const resp = await fetch('http://192.168.0.117:50000/reply', {
@@ -123,23 +141,23 @@ const Chat: React.FC = () => {
       });
       if (!resp.ok) throw new Error(await resp.text());
       const data = (await resp.json()) as Reply;
-      // append bot reply
       setMessages(msgs => [...msgs, { from: 'bot', reply: data }]);
     } catch (err: any) {
       setMessages(msgs => [
         ...msgs,
-        { from: 'bot', reply: { type: 'text', text: `Error: ${err.message}` } },
+        {
+          from: 'bot',
+          reply: { type: 'text', text: `Error: ${err.message}` },
+        },
       ]);
     }
   };
 
-  // send from input
   const sendQuery = () => {
     doSend(draft);
     setDraft('');
   };
 
-  // send sample queries
   const sendSample = (text: string) => {
     doSend(text);
     setDraft('');
@@ -163,7 +181,11 @@ const Chat: React.FC = () => {
                 <Alert
                   message={`Filter suggestion: ${reply.filter_key}`}
                   description={
-                    <a href={reply.url} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={reply.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Open Filter
                     </a>
                   }
@@ -184,12 +206,16 @@ const Chat: React.FC = () => {
         })}
         <div ref={bottomRef} />
       </Messages>
+
       <ControlsWrapper>
         {showSamples && (
           <SampleButtons>
-            <SampleButton onClick={() => sendSample('Show all KPIs')}>Show all KPIs</SampleButton>
-            <SampleButton onClick={() => sendSample('Set up my dashboard')}>Set up my dashboard</SampleButton>
-            {/* <SampleButton onClick={() => sendSample('Set up my dashboard with worst performing KPIs')}>Set dashboard 2</SampleButton> */}
+            <SampleButton onClick={() => sendSample('Show all KPIs')}>
+              Show all KPIs
+            </SampleButton>
+            <SampleButton onClick={() => sendSample('Set up my dashboard')}>
+              Set up my dashboard
+            </SampleButton>
           </SampleButtons>
         )}
         <Composer>
@@ -199,7 +225,12 @@ const Chat: React.FC = () => {
             onPressEnter={sendQuery}
             placeholder="Ask me about this dashboard…"
           />
-          <Button type="primary" icon={<SendOutlined />} onClick={sendQuery} style={{ marginLeft: theme.gridUnit }} />
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={sendQuery}
+            style={{ marginLeft: theme.gridUnit }}
+          />
         </Composer>
       </ControlsWrapper>
     </Container>
