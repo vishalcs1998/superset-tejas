@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from 'antd';
 import { WechatOutlined, CloseOutlined } from '@ant-design/icons';
-import Chat from 'src/views/Chat';
+import ChatLauncher from 'src/views/ChatLauncher';
 import { styled } from '@superset-ui/core';
 import { theme } from 'src/preamble';
 
@@ -17,7 +17,6 @@ const ToggleBtn = styled(Button)`
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  /* enlarge the icon inside */
   .anticon {
     font-size: 24px;
   }
@@ -25,7 +24,7 @@ const ToggleBtn = styled(Button)`
 
 const Popup = styled.div`
   position: absolute;
-  bottom: ${theme.gridUnit * 10}px;
+  bottom: ${theme.gridUnit * 2}px;
   right: 0;
   width: 300px;
   height: 400px;
@@ -50,28 +49,32 @@ const Body = styled.div`
 `;
 
 const ChatIcon: React.FC = () => {
+  // SINGLE source of truth for “open/closed”
   const [open, setOpen] = useState(false);
   const toggle = () => setOpen(o => !o);
 
   return (
     <Wrapper>
-      {open && (
+      {open ? (
         <Popup>
           <Header>
             <span>Chat</span>
+            {/* this X now closes the entire thing */}
             <Button type="text" icon={<CloseOutlined />} onClick={toggle} />
           </Header>
           <Body>
-            <Chat />
+            {/* pass toggle down so Chat’s X also calls back up */}
+            <ChatLauncher onClose={toggle} />
           </Body>
         </Popup>
+      ) : (
+        <ToggleBtn
+          type="primary"
+          shape="circle"
+          icon={<WechatOutlined />}
+          onClick={toggle}
+        />
       )}
-      <ToggleBtn
-        type="primary"
-        shape="circle"
-        icon={open ? <CloseOutlined /> : <WechatOutlined />}
-        onClick={toggle}
-      />
     </Wrapper>
   );
 };
